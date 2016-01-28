@@ -93,15 +93,7 @@ def dfs_path(matrix, start, path=[], longest=None):
         childs.append(right)
 
     if not childs:
-        drop_path = drop(path)
-        drop_longest = drop(longest)
-
-        if len(path) > len(longest):
-            longest = path
-        elif len(path) == len(longest):
-            if drop_path >= drop_longest:
-                longest = path
-        return longest
+        return path
 
     for child in childs:
         if child not in path:
@@ -145,21 +137,36 @@ def save(filename, matrix):
         matrix_file.write(matrix)
 
 
+def lets_ski(matrix):
+    longest = []
+    for i in range(matrix.row):
+        for j in range(matrix.row):
+            new_longest = dfs_path(matrix, (i, j), [], [])
+
+            drop_newlongest = drop(new_longest)
+            drop_longest = drop(longest)
+
+            if len(new_longest) > len(longest):
+                longest = new_longest
+            elif len(new_longest) == len(longest):
+                if drop_newlongest >= drop_longest:
+                    longest = new_longest
+            # print i, j, longest
+
+    print "length: {0}, drop: {1}".format(len(longest), drop(longest))
+    for node in longest:
+        print matrix.get(node),
+    print ""
+
+
 if __name__ == '__main__':
     # save("1000x1000.txt", gen_matrix(1000))
     # matrix = Matrix("1000x1000.txt")
     # matrix = Matrix("test.txt")
     matrix = Matrix("map.txt")
 
-    longest = []
     start = time.time()
-    for i in range(matrix.row):
-        for j in range(matrix.row):
-            longest = dfs_path(matrix, (i, j), [], longest)
-            # print i, j, longest
+    lets_ski(matrix)
     end = time.time()
 
     print "used: {0}(s)".format((end - start))
-    print "length: {0}, drop: {1}".format(len(longest), drop(longest))
-    for node in longest:
-        print matrix.get(node),
