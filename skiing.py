@@ -6,6 +6,7 @@ class Matrix:
 
     def __init__(self, filename):
         self.matrix = []
+        self.explore = []
 
         lines = []
         with open(filename, 'r') as matrix_file:
@@ -15,12 +16,27 @@ class Matrix:
         self.col = int(lines[0].split(" ")[1])
         for line in lines[1:]:
             inner = []
+            inner_explore = []
             for splited in line.split(" "):
                 inner.append(int(splited.replace('\n', '')))
+                inner_explore.append(True)
             self.matrix.append(inner)
+            self.explore.append(inner_explore)
+
+    def set_explore(self, coord, yn):
+        x = coord[0]
+        y = coord[1]
+        self.explore[x][y] = yn
+
+    def get_explore(self, coord):
+        x = coord[0]
+        y = coord[1]
+        return self.explore[x][y]
 
     def get(self, coord):
-        return self.matrix[coord[0]][coord[1]]
+        x = coord[0]
+        y = coord[1]
+        return self.matrix[x][y]
 
     def up(self, coord):
         x = coord[0]
@@ -70,6 +86,7 @@ def dfs_path(matrix, start, path=[], longest=None):
         up_val = matrix.get(up)
     if up_val is not None and up_val < val:
         childs.append(up)
+        matrix.set_explore(up, False)
 
     down_val = None
     down = matrix.down(start)
@@ -77,6 +94,7 @@ def dfs_path(matrix, start, path=[], longest=None):
         down_val = matrix.get(down)
     if down_val is not None and down_val < val:
         childs.append(down)
+        matrix.set_explore(down, False)
 
     left_val = None
     left = matrix.left(start)
@@ -84,6 +102,7 @@ def dfs_path(matrix, start, path=[], longest=None):
         left_val = matrix.get(left)
     if left_val is not None and left_val < val:
         childs.append(left)
+        matrix.set_explore(left, False)
 
     right_val = None
     right = matrix.right(start)
@@ -91,6 +110,7 @@ def dfs_path(matrix, start, path=[], longest=None):
         right_val = matrix.get(right)
     if right_val is not None and right_val < val:
         childs.append(right)
+        matrix.set_explore(right, False)
 
     if not childs:
         return path
@@ -141,6 +161,9 @@ def lets_ski(matrix):
     longest = []
     for i in range(matrix.row):
         for j in range(matrix.row):
+            if not matrix.get_explore((i, j)):
+                continue
+
             new_longest = dfs_path(matrix, (i, j), [], [])
 
             drop_newlongest = drop(new_longest)
@@ -152,21 +175,22 @@ def lets_ski(matrix):
                 if drop_newlongest >= drop_longest:
                     longest = new_longest
             # print i, j, longest
-
-    print "length: {0}, drop: {1}".format(len(longest), drop(longest))
-    for node in longest:
-        print matrix.get(node),
-    print ""
+    return longest
 
 
 if __name__ == '__main__':
     # save("1000x1000.txt", gen_matrix(1000))
     # matrix = Matrix("1000x1000.txt")
-    # matrix = Matrix("test.txt")
+    # matrix = Matrix("4x4.txt")
     matrix = Matrix("map.txt")
 
     start = time.time()
-    lets_ski(matrix)
+    longest = lets_ski(matrix)
     end = time.time()
 
     print "used: {0}(s)".format((end - start))
+
+    print "length: {0}, drop: {1}".format(len(longest), drop(longest))
+    for node in longest:
+        print matrix.get(node),
+    print ""
